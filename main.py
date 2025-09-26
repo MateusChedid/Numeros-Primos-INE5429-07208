@@ -1,58 +1,120 @@
-class RandomNumberGenerator:
-
-    def __init__(self, seed):
-        self.seed = seed
-
-    def lcg(self, n_bits):
-
-        a=1664525675676356575
-        c=10139042356735633458623 
-
-        m = 1 << n_bits
-
-        x = self.seed
-        self.seed = (a * x + c) % m
-
-        return self.seed
-    
-    def xorshift(self, n_bits):
-
-        mask = (1 << n_bits) - 1  
-
-        x = self.seed & mask
-        x ^= (x << 34) & mask
-        x ^= (x >> 167) & mask
-        x ^= (x << 56) & mask
-        self.seed = x & mask
-
-        return self.seed
+import csv
+import time
+import algorithms
 
 
+        
 if __name__ == "__main__":
 
-    seed = 21412413123
-    print(seed.bit_length())
-    rng = RandomNumberGenerator(seed)
-    r = int(input("LCG(1) XOR(2): "))
+    linear = algorithms.LinearCongruentialGenerator(3**4096)
+    xorshift = algorithms.XorShiftGenerator(3**4096)
+
+    random_linear_numbers = []
+    random_xor_numbers = []
 
     n_bits = [40, 56, 80, 128, 168, 224, 256, 512, 1024, 2048, 4096]
 
-    if r == 1:
+    with open("csvs/Final/Randoms 1 - LCG.csv", mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+
+        writer.writerow(["Algorithm", "n_bits_max", "n_bits", "Index", "Random_Number"])
         print("LCG")
-        # LCG loop
+
+        lcg_n_bits_dict = {}
+        quantity = 1500
         for n in n_bits:
-            print(f"n_bits: {n}")
-            for i in range(10):
-                random_number = rng.lcg(n)
-                print(f"{i} -> {str(random_number)[:5]}..., size: {random_number.bit_length()}")
-            print('\n')
-    else:
+            avg = 0
+            for i in range(quantity):
+                start = time.perf_counter()
+                random_number = linear.algorithm(n)
+                end = time.perf_counter()
+                avg += (end - start)
+                writer.writerow(["LCG", n, random_number.bit_length(), i, random_number])
+                random_linear_numbers.append(random_number)
+
+            lcg_n_bits_dict.update({n: f'{(avg/quantity)*1000}'})
+
+            print(f"n_bits: {n}, avg time: {(avg/quantity)*1000} ms")
+
+    with open("csvs/Final/Randoms 2 - XORSHIFT.csv", mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+
+        writer.writerow(["Algorithm", "n_bits_max", "n_bits", "Index", "Random_Number"])
         print("XORSHIFT")
-        # Xorshift loop
+
+        xor_n_bits_dict = {}
+        
+        quantity = 1500
         for n in n_bits:
-            print(f"n_bits: {n}")
-            for i in range(10):
-                random_number = rng.xorshift(n)
-                print(f"{i} -> {str(random_number)[:5]}..., size: {random_number.bit_length()}")
-                # print(f"{i} -> {random_number}, size: {random_number.bit_length()}")
-            print('\n')
+            avg = 0
+            for i in range(quantity):
+                start = time.perf_counter()
+                random_number = xorshift.algorithm(n)
+                end = time.perf_counter()
+                avg += (end - start)
+                writer.writerow(["XORSHIFT", n, random_number.bit_length(), i, random_number])
+                random_xor_numbers.append(random_number)
+
+            xor_n_bits_dict.update({n: f'{(avg/quantity)*1000}'})
+
+            print(f"n_bits: {n}, avg time: {(avg/quantity)*1000} ms")
+    print("CSVs gerados ")
+
+
+    with open("csvs/Final/Randoms 3 - COMPARISON.csv", mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(["Algorithm", "Tamanho do Número", "Tempo para gerar"])
+        for n in n_bits:
+            writer.writerow(["LCG", n, lcg_n_bits_dict[n]])
+        for n in n_bits:
+            writer.writerow(["XORSHIFT", n, xor_n_bits_dict[n]])
+
+
+    #Primes
+    with open("csvs/Final/Primes 1 - LCG.csv", mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+
+        writer.writerow(["Algorithm", "n_bits_max", "n_bits", "Random_Number"])
+        print("LCG")
+
+        lcg_n_bits_dict = {}
+
+        for random_number in random_linear_numbers:
+            start = time.perf_counter()
+            primo = algorithms.MillerRabin(random_number).is_prime()
+            end = time.perf_counter()
+            if primo:
+                total_time = end - start
+                writer.writerow(["LCG", random_number.bit_length(), random_number])
+                lcg_n_bits_dict.update({random_number: [random_number.bit_length(), f'{total_time*1000}']})
+                print(f"n_bits: {random_number.bit_length()}, time: {total_time*1000} ms")
+            
+
+    with open("csvs/Final/Primes 2 - XORSHIFT.csv", mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+
+        writer.writerow(["Algorithm", "n_bits_max", "n_bits", "Random_Number"])
+        print("XORSHIFT")
+
+        xor_n_bits_dict = {}
+        for random_number in random_xor_numbers:
+            start = time.perf_counter()
+            primo = algorithms.MillerRabin(random_number).is_prime()
+            end = time.perf_counter()
+            if primo:
+                total_time = end - start
+                writer.writerow(["XORSHIFT", random_number.bit_length(), random_number])
+                xor_n_bits_dict.update({random_number: [random_number.bit_length(), f'{total_time*1000}']})
+                print(f"n_bits: {random_number.bit_length()}, time: {total_time*1000} ms")
+
+          
+    print("CSVs gerados ")
+
+
+    with open("csvs/Final/Primes 3 - COMPARISON.csv", mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(["Algorithm", "Tamanho do Número","Numero Primo gerado", "Tempo para gerar"])
+        for n in lcg_n_bits_dict:
+            writer.writerow(["LCG", lcg_n_bits_dict[n][0], n, lcg_n_bits_dict[n][1]])
+        for n in xor_n_bits_dict:
+            writer.writerow(["XORSHIFT", xor_n_bits_dict[n][0], n, xor_n_bits_dict[n][1]])
