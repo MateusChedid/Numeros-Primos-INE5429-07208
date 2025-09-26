@@ -1,4 +1,5 @@
 import random
+import math
 
 class LinearCongruentialGenerator:
     def __init__(self, seed):
@@ -12,7 +13,6 @@ class LinearCongruentialGenerator:
         x = self.seed
         self.seed = (a * x + c) % m
         return self.seed
-
 
 
 class XorShiftGenerator:
@@ -69,3 +69,34 @@ class MillerRabin:
             else:
                 return False
         return True
+
+class Fermat:
+    def __init__(self, n, k=5):
+        """
+        n: número a ser testado
+        k: número de iterações (mais = maior confiabilidade)
+        """
+        self.n = n
+        self.k = k
+
+    def is_prime(self):
+        n = self.n
+
+        # Casos triviais
+        if n < 2:
+            return False
+        if n in (2, 3):
+            return True
+        if n % 2 == 0:
+            return False
+
+        # Teste de Fermat
+        for _ in range(self.k):
+            a = random.randrange(2, n - 1)
+            # se não for coprimo, já é composto
+            if math.gcd(a, n) != 1:
+                return False
+            if pow(a, n - 1, n) != 1:
+                return False  # não satisfaz o teorema de Fermat → composto
+
+        return True  # provavelmente primo
