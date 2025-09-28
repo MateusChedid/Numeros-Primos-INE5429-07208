@@ -1,0 +1,12 @@
+Algorithm;Tamanho do Número;Tempo para gerar
+LCG;40;0.00055 ms
+LCG;56;0.00053 ms
+LCG;80;0.00069 ms
+LCG;128;0.00094 ms
+LCG;168;0.00098 ms
+LCG;224;0.00139 ms
+LCG;256;0.00135 ms
+LCG;512;0.00192 ms
+LCG;1024;0.00210 ms
+LCG;2048;0.00367 ms
+LCG;4096;0.00617 ms
