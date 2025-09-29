@@ -47,7 +47,7 @@ if __name__ == "__main__":
         exit()
 
     n_bits = [40, 56, 80, 128, 168, 224, 256, 512, 1024, 2048, 4096]
-    quantity = 10**5
+    quantity = 10**3
 
     if random_option == 1 or random_option == 3:
         linear = random_algorithms.LinearCongruentialGenerator(2**27)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                 n_bits_list = []
                 for i in range(quantity):
 
-                    start = time.perf_counter()
+                    start = time.perf_counter_ns()
                     random_number = linear.algorithm(n)
                     end = time.perf_counter()
 
@@ -137,36 +137,68 @@ if __name__ == "__main__":
             alg_selected = "Miller-Rabin e Fermat"
 
         print(f"Identificando primos com números gerados pelo {alg_selected}")
+        target_bit_lengths = [40, 56, 80, 128, 168, 224, 256, 512, 1024, 2048, 4096]
 
         with open(f"csvs/main_csvs/Primes/ 1 - {alg_selected}.csv", mode="w", newline="") as csv_file:
             writer = csv.writer(csv_file)
 
             writer.writerow(["Algorithm", "n_bits", "Prime_Number"])
 
+
             if prime_option in [1, 3]:
+
                 miller_n_bits_dict = {}
-                for random_number in random_number_list:
+                if random_option == 1:
+                    random_generator = random_algorithms.LinearCongruentialGenerator(2**27)
+                elif random_option == 2:
+                    random_generator = random_algorithms.XorShiftGenerator(2**27)
+
+                print("Miller-Rabin")
+                for n in n_bits:
                     start = time.perf_counter()
-                    primo = prime_algorithms.MillerRabin(random_number).is_prime()
-                    end = time.perf_counter()
-                    if primo:
-                        total_time = end - start
-                        writer.writerow(["Miller-Rabin", random_number.bit_length(), random_number])
-                        miller_n_bits_dict.update({random_number: [random_number.bit_length(), f'{total_time*1000}']})
-                        print(f"n_bits: {random_number.bit_length()}, time: {total_time*1000} ms")
+                    random_number = random_generator.algorithm(n)
+                    while random_number.bit_length() < n:
+                        random_number = random_generator.algorithm(n)
+
+                    while True:
+                        if random_number % 2 == 0 and random_number != 2:
+                            random_number += 1
+                        if prime_algorithms.MillerRabin(random_number).is_prime():
+                            end = time.perf_counter()
+                            total_time = end - start
+                            writer.writerow(["Miller-Rabin", random_number.bit_length(), random_number])
+                            miller_n_bits_dict.update({random_number: [random_number.bit_length(), f'{total_time*1000}']})
+                            print(f"n_bits: {random_number.bit_length()}, time: {total_time*1000} ms")
+                            break
+                        random_number += 2
+                        
 
             if prime_option in [2, 3]:
+
                 fermat_n_bits_dict = {}
-                for random_number in random_number_list:
+                if random_option == 1:
+                    random_generator = random_algorithms.LinearCongruentialGenerator(2**27)
+                elif random_option == 2:
+                    random_generator = random_algorithms.XorShiftGenerator(2**27)
+
+                print("Fermat")
+                for n in n_bits:
                     start = time.perf_counter()
-                    primo = prime_algorithms.Fermat(random_number).is_prime()
-                    end = time.perf_counter()
-                    if primo:
-                        total_time = end - start
-                        writer.writerow(["Fermat", random_number.bit_length(), random_number])
-                        fermat_n_bits_dict.update({random_number: [random_number.bit_length(), f'{total_time*1000}']})
-                        print(f"n_bits: {random_number.bit_length()}, time: {total_time*1000} ms")
-                        
+                    random_number = random_generator.algorithm(n)
+                    while random_number.bit_length() < n:
+                        random_number = random_generator.algorithm(n)
+
+                    while True:
+                        if random_number % 2 == 0 and random_number != 2:
+                            random_number += 1
+                        if prime_algorithms.Fermat(random_number).is_prime():
+                            end = time.perf_counter()
+                            total_time = end - start
+                            writer.writerow(["Fermat", random_number.bit_length(), random_number])
+                            fermat_n_bits_dict.update({random_number: [random_number.bit_length(), f'{total_time*1000}']})
+                            print(f"n_bits: {random_number.bit_length()}, time: {total_time*1000} ms")
+                            break
+                        random_number += 2
 
         
         print("CSVs gerados ")
