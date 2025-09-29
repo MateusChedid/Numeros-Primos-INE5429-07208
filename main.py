@@ -2,10 +2,34 @@ import csv
 import time
 import random_algorithms
 import prime_algorithms
-
+import matplotlib.pyplot as plt
+import os
+import math
 
         
 if __name__ == "__main__":
+
+    def to_superscript_10(n):
+        exponent = int(math.log10(n))
+        sup = str(exponent).translate(str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹"))
+        return f"10{sup}"
+
+    def plot_histogram(data, num_iterations, bins=100, title="Histogram", save_path=None):
+        max_val = max(data)
+        data = [x / max_val for x in data]  # normaliza para 0–1
+
+        plt.hist(data, bins=bins, edgecolor='black', color="darkblue", linewidth=0.25)
+        plt.title(title)
+        plt.xlabel("Normalized Numbers")
+        plt.ylabel(f"Frequency over {to_superscript_10(num_iterations)} iterations")
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+        if save_path:
+            # Cria diretório se não existir
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            plt.savefig(f"{save_path}/{title}.png", dpi=300)  # dpi ajusta a resolução
+
+        plt.close()  # Fecha a figura para não mostrar ou ocupar memória
 
     action = int(input("Escolha a ação:\n1 - Gerar apenas números aleatórios\n2 - Gerar números primos\nOpção: "))
 
@@ -23,22 +47,21 @@ if __name__ == "__main__":
         exit()
 
     n_bits = [40, 56, 80, 128, 168, 224, 256, 512, 1024, 2048, 4096]
-    quantity = 1000
+    quantity = 10**5
 
     if random_option == 1 or random_option == 3:
         linear = random_algorithms.LinearCongruentialGenerator(2**27)
         random_linear_numbers = []
         with open("csvs/main_csvs/Randoms/ 1 - LCG.csv", mode="w", newline="") as csv_file:
             writer = csv.writer(csv_file, delimiter=";")
-
             writer.writerow(["Algorithm", "n_bits_max", "n_bits", "Index", "Random_Number"])
             print("LCG")
 
             lcg_n_bits_dict = {}
 
-            
             for n in n_bits:
                 avg = 0
+                n_bits_list = []
                 for i in range(quantity):
 
                     start = time.perf_counter()
@@ -48,7 +71,9 @@ if __name__ == "__main__":
                     avg += (end - start)
                     writer.writerow(["LCG", n, random_number.bit_length(), i, random_number])
                     random_linear_numbers.append(random_number)
+                    n_bits_list.append(random_number)
 
+                plot_histogram(n_bits_list, quantity, bins=100, title=f"LCG - n_bits={n}", save_path="csvs/main_csvs/Randoms/histograms")           
                 lcg_n_bits_dict.update({n: f'{(avg/quantity)*1000:.5f}'})
 
                 print(f"n_bits: {n}, avg time: {(avg/quantity)*1000:.5f} ms")
@@ -66,6 +91,7 @@ if __name__ == "__main__":
             
             for n in n_bits:
                 avg = 0
+                n_bits_list = []
                 for i in range(quantity):
 
                     start = time.perf_counter()
@@ -75,7 +101,9 @@ if __name__ == "__main__":
                     avg += (end - start)
                     writer.writerow(["XORSHIFT", n, random_number.bit_length(), i, random_number])
                     random_xor_numbers.append(random_number)
+                    n_bits_list.append(random_number)
 
+                plot_histogram(n_bits_list, quantity, bins=100, title=f"XORSHIFT - n_bits={n}", save_path="csvs/main_csvs/Randoms/histograms")
                 xor_n_bits_dict.update({n: f'{(avg/quantity)*1000:.5f}'})
 
                 print(f"n_bits: {n}, avg time: {(avg/quantity)*1000:.5f} ms")
