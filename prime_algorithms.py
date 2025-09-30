@@ -1,10 +1,11 @@
-import random
+import random_algorithms
 import math
 
 class MillerRabin:
     def __init__(self, n, rounds=5):
         self.n = n
         self.rounds = rounds
+        self.random_generator = random_algorithms.LinearCongruentialGenerator(self.n)
 
     # Passo 1: decompor n-1 na forma 2^k * m
     def find_k_m(self):
@@ -24,9 +25,9 @@ class MillerRabin:
 
     # Passo 2: escolha de uma base aleatória
     def chosen_a(self):
-
-        #Escolhe uma base aleatória a no intervalo [2, n-2].
-        return random.randint(2, self.n - 2)
+        #Coletar um valor aleatório 'a' no intervalo [2, n-2].
+        a = self.random_generator.algorithm(40) % (self.n - 3) + 2
+        return a
 
     # Passo 3: execução do teste de Miller-Rabin
     def is_prime(self):
@@ -67,10 +68,12 @@ class Fermat:
     def __init__(self, n, rounds=5):
         self.n = n
         self.rounds = rounds
+        self.random_generator = random_algorithms.LinearCongruentialGenerator(self.n)
 
     def chosen_a(self):
-        #Escolhe uma base aleatória a no intervalo [2, n-2].
-        return random.randint(2, self.n - 2)
+        #Coletar um valor aleatório 'a' no intervalo [2, n-2].
+        a = self.random_generator.algorithm(40) % (self.n - 3) + 2
+        return a
 
     def is_prime(self):
         n = self.n
