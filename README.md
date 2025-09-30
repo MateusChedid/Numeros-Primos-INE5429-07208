@@ -7,7 +7,7 @@ Além disso, realiza comparações de desempenho entre os métodos e gera arquiv
 
 ## Como executar  
 
-### 1. Programa principal  
+### Programa principal  
 O arquivo principal é o **`main.py`**, que contém um menu interativo para o usuário escolher a ação desejada.  
 
 ```bash
