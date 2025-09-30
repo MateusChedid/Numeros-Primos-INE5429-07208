@@ -9,7 +9,7 @@ pseudo_primos = [
 ]
 
 for num in pseudo_primos:
-    if prime_algorithms.Fermat(num,10).is_prime() and not prime_algorithms.MillerRabin(num,10).is_prime():
+    if prime_algorithms.Fermat(num,5).is_prime() and not prime_algorithms.MillerRabin(num,10).is_prime():
         print(f"For Fermat, {num} is probably a prime number, but for Miller-Rabin, it is not.")
-    elif not prime_algorithms.Fermat(num,10).is_prime() and prime_algorithms.MillerRabin(num,10).is_prime():
+    elif not prime_algorithms.Fermat(num,5).is_prime() and prime_algorithms.MillerRabin(num,10).is_prime():
         print(f"For Miller-Rabin, {num} is probably a prime number, but for Fermat, it is not.")
